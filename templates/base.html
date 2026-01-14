@@ -1,0 +1,61 @@
+{% load static %}
+{% load tailwind_tags %}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Controle EQFAR{% endblock %}</title>
+
+    {% tailwind_css %}
+</head>
+
+<body class="bg-gray-50 font-sans leading-normal tracking-normal flex flex-col min-h-screen">
+
+    <nav class="bg-blue-900 p-4 text-white shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="{% url 'home' %}" class="font-bold text-xl flex items-center gap-2">
+                🔬 EQFAR <span class="text-blue-300 text-sm font-normal">Controle de Ativos</span>
+            </a>
+
+            <div class="space-x-6 text-sm font-medium">
+                <a href="{% url 'dashboard' %}" class="hover:text-blue-300 transition">Dashboard Gantt 📊</a>
+                
+                <a href="{% url 'home' %}" class="hover:text-blue-300 transition">Equipamentos</a>
+
+                <a href="{% url 'my_schedulings' %}" class="hover:text-blue-300 transition">Meus Agendamentos</a>
+
+                <a href="/admin/" target="_blank" class="hover:text-blue-300 transition">
+                    Painel Admin ⚙️
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mx-auto mt-8 px-4 flex-grow mb-10">
+
+        {% if messages %}
+        {% for message in messages %}
+        <div class="p-4 mb-6 rounded shadow-sm border-l-4
+                    {% if message.tags == 'error' %}bg-red-50 text-red-700 border-red-500
+                    {% elif message.tags == 'success' %}bg-green-50 text-green-700 border-green-500
+                    {% else %}bg-blue-50 text-blue-700 border-blue-500{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer class="bg-gray-800 text-center py-6 text-gray-400 text-sm mt-auto">
+        <p>&copy; 2026 Laboratório EQFAR - Controle de Equipamentos</p>
+        <p class="text-xs mt-1 text-gray-600">Desenvolvido para Iniciação Científica</p>
+    </footer>
+
+</body>
+
+</html>

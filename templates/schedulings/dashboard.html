@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard de Capacidade{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-800">Mapa de Capacidade (Gantt)</h1>
+        <p class="text-gray-600">Visualização temporal da ocupação dos equipamentos.</p>
+    </div>
+
+    <div class="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+        <div id="gantt-chart"></div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+<script>
+    // Pegando os dados que vieram do Django
+    var rawData = {{ gantt_data|safe }};
+
+    var options = {
+        series: [
+            {
+                name: 'Ocupação',
+                data: rawData
+            }
+        ],
+        chart: {
+            height: 450,
+            type: 'rangeBar', // Tipo específico para Gantt/Timeline
+            fontFamily: 'sans-serif'
+        },
+        plotOptions: {
+            bar: {
+                horizontal: true,
+                barHeight: '50%',
+                rangeBarGroupRows: true // Agrupa agendamentos do mesmo equipamento na mesma linha
+            }
+        },
+        colors: ['#008FFB', '#00E396'],
+        fill: {
+            type: 'solid'
+        },
+        xaxis: {
+            type: 'datetime', // Eixo X é Tempo
+            labels: {
+                datetimeFormatter: {
+                    year: 'yyyy',
+                    month: 'MMM \'yy',
+                    day: 'dd MMM',
+                    hour: 'HH:mm'
+                }
+            }
+        },
+        tooltip: {
+            x: {
+                format: 'dd MMM HH:mm'
+            }
+        },
+        title: {
+            text: 'Cronograma de Uso dos Equipamentos',
+            align: 'left'
+        }
+    };
+
+    var chart = new ApexCharts(document.querySelector("#gantt-chart"), options);
+    chart.render();
+</script>
+{% endblock %}

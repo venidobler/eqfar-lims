@@ -1,0 +1,29 @@
+# --- Python & Django ---
+*.pyc
+__pycache__/
+*.sqlite3
+*.log
+local_settings.py
+db.sqlite3
+media/
+staticfiles/
+
+# --- Variáveis de Ambiente (Segurança) ---
+.env
+
+# --- Node.js & Tailwind (CRUCIAL) ---
+node_modules/
+*/node_modules/
+npm-debug.log
+yarn-error.log
+
+# --- VS Code ---
+.vscode/
+
+# --- Sistema Operacional ---
+.DS_Store
+Thumbs.db
+
+# --- Ambiente Virtual ---
+venv/
+env/
