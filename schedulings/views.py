@@ -1,5 +1,6 @@
 from django.contrib.auth.decorators import login_required # <--- Importe isso no topo
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.admin.views.decorators import staff_member_required # <--- Só staff pode acessar
 from django.contrib import messages
 from equipments.models import Equipment
 from .forms import SchedulingForm
@@ -63,3 +64,34 @@ def dashboard(request):
         'gantt_data': json.dumps(gantt_data, cls=DjangoJSONEncoder)
     }
     return render(request, 'schedulings/dashboard.html', context)
+
+#------------------- GESTÃO ----------------------------#
+
+# 1. A TELA DE GESTÃO
+@staff_member_required
+def manage_requests(request):
+    # Busca só os pendentes, ordenados pelos mais antigos primeiro
+    pending_schedulings = Scheduling.objects.filter(status='PEND').order_by('created_at')
+    
+    context = {
+        'pending_schedulings': pending_schedulings
+    }
+    return render(request, 'schedulings/manage.html', context)
+
+# 2. A AÇÃO DE APROVAR
+@staff_member_required
+def approve_scheduling(request, id):
+    scheduling = get_object_or_404(Scheduling, id=id)
+    scheduling.status = 'CONF'
+    scheduling.save()
+    messages.success(request, f'Agendamento de {scheduling.user} confirmado!')
+    return redirect('manage_requests')
+
+# 3. A AÇÃO DE REJEITAR
+@staff_member_required
+def reject_scheduling(request, id):
+    scheduling = get_object_or_404(Scheduling, id=id)
+    scheduling.status = 'CANC'
+    scheduling.save()
+    messages.warning(request, f'Agendamento cancelado.')
+    return redirect('manage_requests')
