@@ -3,29 +3,19 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
-# IMPORTAR A VIEW AQUI:
-from equipments.views import list_equipments, equipment_detail 
-from schedulings.views import create_scheduling, my_schedulings, dashboard
-
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path("__reload__/", include("django_browser_reload.urls")),
     
-    # ROTA DA HOME:
-    path('', list_equipments, name='home'),
+    # Reload do Tailwind (Crucial para o desenvolvimento)
+    path("__reload__/", include("django_browser_reload.urls")),
 
-    # --- NOVA ROTA ---
-    # O <int:id> captura o número da URL e passa para a view
-    path('equipment/<int:id>/', equipment_detail, name='equipment_detail'),
+    # --- INCLUSÃO DOS APPS ---
+    
+    # 1. Rotas de Agendamento (Colocamos antes para não conflitar com a home vazia)
+    path('', include('schedulings.urls')),
 
-    # NOVA ROTA DE AGENDAMENTO
-    path('equipment/<int:equipment_id>/schedule/', create_scheduling, name='create_scheduling'),
-
-    # NOVA ROTA:
-    path('my-schedulings/', my_schedulings, name='my_schedulings'),
-
-    # NOVA ROTA DE DASHBOARD
-    path('dashboard/', dashboard, name='dashboard'),
+    # 2. Rotas de Equipamentos (Onde está a Home)
+    path('', include('equipments.urls')),
 ]
 
 if settings.DEBUG:
