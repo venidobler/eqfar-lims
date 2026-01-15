@@ -95,3 +95,7 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = "tailwind"
 CRISPY_TEMPLATE_PACK = "tailwind"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# --- Configurações de Login/Logout ---
+LOGIN_REDIRECT_URL = 'home'  # Para onde vai depois de logar
+LOGOUT_REDIRECT_URL = 'login' # Para onde vai depois de sair

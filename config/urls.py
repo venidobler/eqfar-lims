@@ -6,15 +6,15 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     
-    # Reload do Tailwind (Crucial para o desenvolvimento)
+    # Reload do Tailwind
     path("__reload__/", include("django_browser_reload.urls")),
 
-    # --- INCLUSÃO DOS APPS ---
-    
-    # 1. Rotas de Agendamento (Colocamos antes para não conflitar com a home vazia)
-    path('', include('schedulings.urls')),
+    # --- AUTENTICAÇÃO (Adicione esta linha) ---
+    # Isso cria as rotas: /accounts/login/ (nome='login') e /accounts/logout/
+    path('accounts/', include('django.contrib.auth.urls')), 
 
-    # 2. Rotas de Equipamentos (Onde está a Home)
+    # --- SEUS APPS ---
+    path('', include('schedulings.urls')),
     path('', include('equipments.urls')),
 ]
 

@@ -1,0 +1,63 @@
+{% load static %}
+{% load tailwind_tags %}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - EQFAR LIMS</title>
+    {% tailwind_css %}
+</head>
+<body class="bg-slate-900 h-screen flex items-center justify-center">
+
+    <div class="w-full max-w-md bg-white rounded-lg shadow-2xl overflow-hidden">
+        
+        <div class="bg-gray-50 px-8 py-6 border-b border-gray-100 text-center">
+            <h1 class="text-3xl font-bold text-slate-800 tracking-tight flex items-center justify-center gap-2">
+                🧪 EQFAR <span class="text-sm bg-blue-600 text-white px-2 py-0.5 rounded uppercase tracking-widest">LIMS</span>
+            </h1>
+            <p class="text-gray-500 mt-2 text-sm">Sistema de Gestão de Capacidade Laboratorial</p>
+        </div>
+
+        <div class="px-8 py-8">
+            
+            {% if form.errors %}
+                <div class="mb-4 bg-red-50 border-l-4 border-red-500 text-red-700 p-4 text-sm" role="alert">
+                    <p class="font-bold">Acesso Negado</p>
+                    <p>Usuário ou senha incorretos.</p>
+                </div>
+            {% endif %}
+
+            <form method="post" action="{% url 'login' %}">
+                {% csrf_token %}
+                
+                <div class="mb-5">
+                    <label for="id_username" class="block text-gray-700 text-sm font-bold mb-2">Usuário</label>
+                    <input type="text" name="username" autofocus required id="id_username" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                           placeholder="Digite seu usuário">
+                </div>
+
+                <div class="mb-6">
+                    <div class="flex justify-between items-center mb-2">
+                        <label for="id_password" class="block text-gray-700 text-sm font-bold">Senha</label>
+                    </div>
+                    <input type="password" name="password" required id="id_password" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                           placeholder="••••••••">
+                </div>
+
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-md transition duration-200 shadow-lg transform hover:-translate-y-0.5">
+                    Entrar no Sistema
+                </button>
+            </form>
+        </div>
+
+        <div class="bg-gray-50 px-8 py-4 border-t border-gray-100 text-center">
+            <p class="text-xs text-gray-400">&copy; 2026 Prati-Donaduzzi & Biopark</p>
+        </div>
+    </div>
+
+</body>
+</html>
