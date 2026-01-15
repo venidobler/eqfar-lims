@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Analysis, EquipmentBooking
+from .models import Analysis, Consumable, EquipmentBooking
 from django.contrib.auth.decorators import login_required
 from .forms import EquipmentBookingForm, MaterialUsageForm
 from django.contrib import messages
@@ -134,3 +134,8 @@ def dashboard(request):
         'gantt_data': json.dumps(gantt_data)
     }
     return render(request, 'laboratory/dashboard.html', context)
+
+@login_required
+def consumable_list(request):
+    consumables = Consumable.objects.all().order_by('name')
+    return render(request, 'laboratory/consumable_list.html', {'consumables': consumables})

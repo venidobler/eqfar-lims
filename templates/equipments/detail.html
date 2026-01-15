@@ -36,21 +36,19 @@
 
             <div class="mt-8 flex gap-4">
                 <a href="{% url 'home' %}"
-                    class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition">
-                    &larr; Voltar
+                    class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
+                    Voltar
                 </a>
 
-                {% if equipment.status == 'DISP' %}
-                <a href="{% url 'create_scheduling' equipment.id %}"
-                    class="flex-1 text-center px-4 py-2 bg-blue-600 text-white rounded font-bold hover:bg-blue-700 transition shadow-lg">
-                    Agendar Uso 📅
+                <a href="{% url 'dashboard' %}"
+                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition shadow-md flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                        </path>
+                    </svg>
+                    Ver Disponibilidade
                 </a>
-                {% else %}
-                <button disabled
-                    class="flex-1 px-4 py-2 bg-gray-300 text-gray-500 rounded font-bold cursor-not-allowed">
-                    Indisponível
-                </button>
-                {% endif %}
             </div>
         </div>
     </div>

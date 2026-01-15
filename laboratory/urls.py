@@ -19,4 +19,7 @@ urlpatterns = [
 
     # Nova rota para o dashboard
     path('dashboard/', views.dashboard, name='dashboard'), 
+
+    # Rota para listar insumos (ex: /laboratorio/insumos/)
+    path('insumos/', views.consumable_list, name='consumable_list'),
 ]
