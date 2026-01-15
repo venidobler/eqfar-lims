@@ -1,8 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Analysis
+from .models import Analysis, EquipmentBooking
 from django.contrib.auth.decorators import login_required
 from .forms import EquipmentBookingForm, MaterialUsageForm
 from django.contrib import messages
+
+import json
+from django.utils import timezone
+from datetime import timedelta
 
 # Lista todas as análises (Dashboard)
 @login_required
@@ -90,3 +94,43 @@ def add_consumable(request, analysis_id):
         'form': form, 
         'analysis': analysis
     })
+
+@login_required
+def dashboard(request):
+    # 1. Definir o intervalo (Ex: Últimos 2 dias e próximos 14 dias)
+    today = timezone.now()
+    start_date = today - timedelta(days=2)
+    end_date = today + timedelta(days=14)
+
+    # 2. Buscar as reservas nesse período
+    bookings = EquipmentBooking.objects.filter(
+        start_time__gte=start_date,
+        start_time__lte=end_date
+    ).select_related('equipment', 'analysis')
+
+    # 3. Formatar para o ApexCharts
+    # Formato: {'x': 'Nome do Equipamento', 'y': [Inicio_timestamp, Fim_timestamp]}
+    gantt_data = []
+    
+    for booking in bookings:
+        # Define cor: Azul se for minha reserva, Cinza se for de outro
+        color = '#2563EB' if booking.analysis.researcher == request.user else '#9CA3AF'
+        
+        gantt_data.append({
+            'x': booking.equipment.name,
+            'y': [
+                int(booking.start_time.timestamp() * 1000), # JS usa milissegundos
+                int(booking.end_time.timestamp() * 1000)
+            ],
+            'fillColor': color,
+            'meta': {
+                'analise': booking.analysis.title,
+                'researcher': booking.analysis.researcher.username
+            }
+        })
+
+    # Serializa para JSON para o HTML ler
+    context = {
+        'gantt_data': json.dumps(gantt_data)
+    }
+    return render(request, 'laboratory/dashboard.html', context)

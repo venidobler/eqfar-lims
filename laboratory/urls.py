@@ -16,4 +16,7 @@ urlpatterns = [
 
     # Nova rota: Adicionar Insumo na Análise X
     path('<int:analysis_id>/insumo/', views.add_consumable, name='add_consumable'),
+
+    # Nova rota para o dashboard
+    path('dashboard/', views.dashboard, name='dashboard'), 
 ]
