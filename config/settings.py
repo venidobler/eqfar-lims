@@ -27,7 +27,7 @@ INSTALLED_APPS = [
 
     # Meus Apps
     'equipments',
-    'schedulings',
+    'laboratory',
     'core',
 ]
 

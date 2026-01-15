@@ -14,8 +14,11 @@ urlpatterns = [
     path('accounts/', include('django.contrib.auth.urls')), 
 
     # --- SEUS APPS ---
-    path('', include('schedulings.urls')),
-    path('', include('equipments.urls')),
+    # Rota para a lista de equipamentos (Home do site)
+    path('', include('equipments.urls')), 
+    
+    # Rota para o módulo de laboratório (Análises, etc)
+    path('laboratorio/', include('laboratory.urls')),
 ]
 
 if settings.DEBUG:
