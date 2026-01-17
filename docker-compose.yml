@@ -1,0 +1,33 @@
+services:
+  # Serviço do Banco de Dados
+  db:
+    image: postgres:15
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=lims_db
+      - POSTGRES_USER=lims_user
+      - POSTGRES_PASSWORD=lims_password
+    restart: always
+
+  # Serviço do seu Site Django
+  web:
+    build: .
+    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - .:/app  # Opcional: Útil para desenvolvimento, remove em produção real se quiser
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_NAME=lims_db
+      - DB_USER=lims_user
+      - DB_PASSWORD=lims_password
+      - DB_PORT=5432
+
+volumes:
+  postgres_data:
