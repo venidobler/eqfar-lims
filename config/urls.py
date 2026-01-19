@@ -1,8 +1,11 @@
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.contrib.auth.views import LogoutView
 from django.conf import settings
 from django.conf.urls.static import static
+
+# IMPORTANTE: Importe a view que serve arquivos estáticos manualmente
+from django.views.static import serve
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -21,6 +24,10 @@ urlpatterns = [
     
     # Rota para o módulo de laboratório (Análises, etc)
     path('', include('laboratory.urls')),
+
+    # --- O PULO DO GATO ---
+    # Esta linha obriga o Django a servir a mídia, mesmo com DEBUG=False/Gunicorn
+    re_path(r'^media/(?P<path>.*)$', serve,{'document_root': settings.MEDIA_ROOT}),
 ]
 
 if settings.DEBUG:

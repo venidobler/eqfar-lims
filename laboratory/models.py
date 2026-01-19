@@ -6,12 +6,37 @@ from equipments.models import Equipment  # Importando do outro app
 # --- 1. Tabela de Insumos (Consumables) ---
 class Consumable(models.Model):
     name = models.CharField(max_length=100, verbose_name="Nome do Insumo")
-    unit = models.CharField(max_length=20, verbose_name="Unidade (ex: mL, g, un)")
-    current_stock = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name="Estoque Atual")
-    cost_per_unit = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name="Custo Unitário (R$)")
+    
+    # --- CAMPOS NOVOS NECESSÁRIOS PARA O ESTOQUE ---
+    quantity = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        default=0, 
+        verbose_name="Quantidade Atual"
+    )
+    
+    unit = models.CharField(
+        max_length=20, 
+        verbose_name="Unidade", 
+        help_text="Ex: mL, g, frascos, caixas"
+    )
+    
+    minimum_stock = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        default=5, 
+        verbose_name="Estoque Mínimo"
+    )
+    
+    expiration_date = models.DateField(
+        null=True, 
+        blank=True, 
+        verbose_name="Validade"
+    )
+    # -----------------------------------------------
 
     def __str__(self):
-        return f"{self.name} ({self.unit})"
+        return f"{self.name} ({self.quantity} {self.unit})"
 
 # --- 2. Tabela Pai: A Análise (Analysis) ---
 class Analysis(models.Model):

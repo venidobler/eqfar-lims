@@ -5,8 +5,11 @@
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-3xl font-bold text-gray-800">Insumos & Reagentes 🧪</h1>
         {% if user.is_staff %}
-        <a href="/admin/laboratory/consumable/add/" target="_blank" class="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700 transition text-sm">
-            + Cadastrar Novo (Admin)
+        <a href="{% url 'consumable_create' %}" class="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md shadow transition-colors text-sm font-medium">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+            </svg>
+            Novo Insumo
         </a>
         {% endif %}
     </div>
@@ -17,7 +20,7 @@
                 <tr>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estoque Atual</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Custo Unit.</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Validade</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                 </tr>
             </thead>
@@ -28,23 +31,23 @@
                         {{ item.name }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <span class="font-bold">{{ item.current_stock }}</span> {{ item.unit }}
+                        <span class="font-bold text-gray-800">{{ item.quantity }}</span> {{ item.unit }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        R$ {{ item.cost_per_unit }}
+                        {{ item.expiration_date|date:"d/m/Y"|default:"-" }}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        {% if item.current_stock > 10 %}
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                Disponível
+                        {% if item.quantity == 0 %}
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                Esgotado
                             </span>
-                        {% elif item.current_stock > 0 %}
+                        {% elif item.quantity <= item.minimum_stock %}
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
                                 Baixo Estoque
                             </span>
                         {% else %}
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                Indisponível
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                Disponível
                             </span>
                         {% endif %}
                     </td>

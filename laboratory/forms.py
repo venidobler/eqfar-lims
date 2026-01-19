@@ -1,5 +1,5 @@
 from django import forms
-from .models import EquipmentBooking, MaterialUsage
+from .models import EquipmentBooking, MaterialUsage, Consumable
 
 class EquipmentBookingForm(forms.ModelForm):
     class Meta:
@@ -27,4 +27,27 @@ class MaterialUsageForm(forms.ModelForm):
         labels = {
             'consumable': 'Item do Estoque',
             'quantity_used': 'Quantidade Utilizada',
+        }
+
+# --- ADICIONE ESTA NOVA CLASSE AO FINAL ---
+class ConsumableForm(forms.ModelForm):
+    class Meta:
+        model = Consumable
+        # Estes campos agora existem no model, então vai funcionar!
+        fields = ['name', 'quantity', 'unit', 'minimum_stock', 'expiration_date']
+        
+        labels = {
+            'name': 'Nome do Insumo',
+            'quantity': 'Quantidade Inicial',
+            'unit': 'Unidade (ex: cx, ml, g)',
+            'minimum_stock': 'Estoque Mínimo (Alerta)',
+            'expiration_date': 'Validade',
+        }
+        
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'}),
+            'quantity': forms.NumberInput(attrs={'class': 'w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'}),
+            'unit': forms.TextInput(attrs={'class': 'w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'}),
+            'minimum_stock': forms.NumberInput(attrs={'class': 'w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'}),
+            'expiration_date': forms.DateInput(attrs={'type': 'date', 'class': 'w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'}),
         }

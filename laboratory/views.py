@@ -1,8 +1,14 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Analysis, Consumable, EquipmentBooking
 from django.contrib.auth.decorators import login_required
-from .forms import EquipmentBookingForm, MaterialUsageForm
+from .forms import EquipmentBookingForm, MaterialUsageForm, ConsumableForm # <--- Adicionei ConsumableForm
 from django.contrib import messages
+
+# --- NOVAS IMPORTAÇÕES NECESSÁRIAS PARA A CLASS-BASED VIEW ---
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.views.generic import CreateView
+from django.urls import reverse_lazy
+# -------------------------------------------------------------
 
 import json
 from django.utils import timezone
@@ -14,14 +20,13 @@ def analysis_list(request):
     analyses = Analysis.objects.filter(researcher=request.user).order_by('-created_at')
     return render(request, 'laboratory/analysis_list.html', {'analyses': analyses})
 
-# Cria uma nova análise (apenas o cabeçalho por enquanto)
+# Cria uma nova análise
 @login_required
 def analysis_create(request):
     if request.method == 'POST':
         title = request.POST.get('title')
         description = request.POST.get('description')
         
-        # Cria a análise vinculada ao usuário logado
         Analysis.objects.create(
             title=title,
             description=description,
@@ -33,14 +38,9 @@ def analysis_create(request):
 
 @login_required
 def analysis_detail(request, pk):
-    # Busca a análise ou dá erro 404 se não existir
-    # O 'researcher=request.user' garante que ninguém veja a análise de outro (segurança básica)
     analysis = get_object_or_404(Analysis, pk=pk, researcher=request.user)
-    
     context = {
         'analysis': analysis,
-        # O Django já traz os relacionamentos reversos (bookings e materials_used)
-        # por causa do related_name que definimos no models.py!
     }
     return render(request, 'laboratory/analysis_detail.html', context)
 
@@ -52,15 +52,13 @@ def add_booking(request, analysis_id):
         form = EquipmentBookingForm(request.POST)
         if form.is_valid():
             booking = form.save(commit=False)
-            booking.analysis = analysis # Vincula à análise atual
+            booking.analysis = analysis
             try:
-                booking.full_clean() # Força a validação do Model (onde está a regra anti-conflito)
+                booking.full_clean()
                 booking.save()
                 messages.success(request, "Equipamento reservado com sucesso!")
                 return redirect('analysis_detail', pk=analysis.pk)
             except Exception as e:
-                # Se der erro de validação (ex: conflito de horário), exibe na tela
-                # O Django retorna o erro como dicionário ou lista, pegamos a mensagem
                 if hasattr(e, 'message_dict'):
                     for field, errors in e.message_dict.items():
                         for error in errors:
@@ -75,6 +73,7 @@ def add_booking(request, analysis_id):
         'analysis': analysis
     })
 
+# Essa view registra o USO de um insumo (Gasto)
 @login_required
 def add_consumable(request, analysis_id):
     analysis = get_object_or_404(Analysis, pk=analysis_id, researcher=request.user)
@@ -84,9 +83,27 @@ def add_consumable(request, analysis_id):
         if form.is_valid():
             usage = form.save(commit=False)
             usage.analysis = analysis # Vincula à análise atual
-            usage.save()
-            messages.success(request, "Insumo registrado com sucesso!")
-            return redirect('analysis_detail', pk=analysis.pk)
+            
+            # --- O PULO DO GATO: BAIXA DE ESTOQUE ---
+            item_estoque = usage.consumable # Pega o objeto do estoque
+            
+            # 1. Verifica se tem saldo suficiente
+            if item_estoque.quantity >= usage.quantity_used:
+                
+                # 2. Subtrai a quantidade
+                item_estoque.quantity -= usage.quantity_used
+                item_estoque.save() # SALVA A NOVA QUANTIDADE NO BANCO
+                
+                # 3. Salva o registro de uso
+                usage.save()
+                
+                messages.success(request, f"Uso registrado! Restam {item_estoque.quantity} {item_estoque.unit} no estoque.")
+                return redirect('analysis_detail', pk=analysis.pk)
+            
+            else:
+                # Se tentar usar mais do que tem, dá erro
+                messages.error(request, f"Estoque insuficiente! Você tentou usar {usage.quantity_used}, mas só tem {item_estoque.quantity}.")
+                
     else:
         form = MaterialUsageForm()
 
@@ -97,29 +114,24 @@ def add_consumable(request, analysis_id):
 
 @login_required
 def dashboard(request):
-    # 1. Definir o intervalo (Ex: Últimos 2 dias e próximos 14 dias)
     today = timezone.now()
     start_date = today - timedelta(days=2)
     end_date = today + timedelta(days=14)
 
-    # 2. Buscar as reservas nesse período
     bookings = EquipmentBooking.objects.filter(
         start_time__gte=start_date,
         start_time__lte=end_date
     ).select_related('equipment', 'analysis')
 
-    # 3. Formatar para o ApexCharts
-    # Formato: {'x': 'Nome do Equipamento', 'y': [Inicio_timestamp, Fim_timestamp]}
     gantt_data = []
     
     for booking in bookings:
-        # Define cor: Azul se for minha reserva, Cinza se for de outro
         color = '#2563EB' if booking.analysis.researcher == request.user else '#9CA3AF'
         
         gantt_data.append({
             'x': booking.equipment.name,
             'y': [
-                int(booking.start_time.timestamp() * 1000), # JS usa milissegundos
+                int(booking.start_time.timestamp() * 1000),
                 int(booking.end_time.timestamp() * 1000)
             ],
             'fillColor': color,
@@ -129,7 +141,6 @@ def dashboard(request):
             }
         })
 
-    # Serializa para JSON para o HTML ler
     context = {
         'gantt_data': json.dumps(gantt_data)
     }
@@ -139,3 +150,14 @@ def dashboard(request):
 def consumable_list(request):
     consumables = Consumable.objects.all().order_by('name')
     return render(request, 'laboratory/consumable_list.html', {'consumables': consumables})
+
+# --- NOVA VIEW: CADASTRAR NOVO TIPO DE INSUMO (Estoque) ---
+class ConsumableCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+    model = Consumable
+    form_class = ConsumableForm
+    # MUDEI O NOME AQUI PARA NÃO CONFLITAR COM O DE CIMA
+    template_name = 'laboratory/consumable_create.html' 
+    success_url = reverse_lazy('consumable_list')
+
+    def test_func(self):
+        return self.request.user.is_staff

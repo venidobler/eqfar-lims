@@ -20,7 +20,11 @@ class AnalysisAdmin(admin.ModelAdmin):
 
 @admin.register(Consumable)
 class ConsumableAdmin(admin.ModelAdmin):
-    list_display = ('name', 'unit', 'current_stock', 'cost_per_unit')
+    # CORREÇÃO AQUI: Use os nomes exatos que estão no models.py agora
+    list_display = ('name', 'quantity', 'unit', 'minimum_stock', 'expiration_date')
+    
+    # Adicione filtros laterais para facilitar a busca
+    list_filter = ('unit',)
     search_fields = ('name',)
 
 # As outras tabelas também podem ser registradas se quiser ver separadamente

@@ -34,12 +34,9 @@
             <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-semibold text-gray-800">🧪 Insumos Utilizados</h3>
-                    <button class="text-sm bg-blue-50 text-blue-600 px-3 py-1 rounded hover:bg-blue-100 transition">
-                        <a href="{% url 'add_consumable' analysis.pk %}"
-                            class="text-sm bg-blue-50 text-blue-600 px-3 py-1 rounded hover:bg-blue-100 transition">
-                            + Adicionar Item
-                        </a>
-                    </button>
+                    <a href="{% url 'add_consumable' analysis.pk %}" class="text-sm bg-blue-50 text-blue-600 px-3 py-1 rounded hover:bg-blue-100 transition">
+                         + Adicionar Item
+                    </a>
                 </div>
 
                 {% if analysis.materials_used.all %}
@@ -48,16 +45,14 @@
                         <tr>
                             <th class="px-3 py-2">Item</th>
                             <th class="px-3 py-2">Qtd.</th>
-                            <th class="px-3 py-2 text-right">Custo Est.</th>
-                        </tr>
+                            </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
                         {% for usage in analysis.materials_used.all %}
                         <tr>
                             <td class="px-3 py-2 font-medium">{{ usage.consumable.name }}</td>
                             <td class="px-3 py-2">{{ usage.quantity_used }} {{ usage.consumable.unit }}</td>
-                            <td class="px-3 py-2 text-right">R$ {{ usage.total_cost|floatformat:2 }}</td>
-                        </tr>
+                            </tr>
                         {% endfor %}
                     </tbody>
                 </table>
@@ -71,12 +66,9 @@
             <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-semibold text-gray-800">📅 Equipamentos</h3>
-                    <button class="text-sm bg-blue-50 text-blue-600 px-3 py-1 rounded hover:bg-blue-100 transition">
-                        <a href="{% url 'add_booking' analysis.pk %}"
-                            class="text-sm bg-blue-50 text-blue-600 px-3 py-1 rounded hover:bg-blue-100 transition">
-                            + Reservar
-                        </a>
-                    </button>
+                    <a href="{% url 'add_booking' analysis.pk %}" class="text-sm bg-blue-50 text-blue-600 px-3 py-1 rounded hover:bg-blue-100 transition">
+                         + Reservar
+                    </a>
                 </div>
 
                 <div class="space-y-3">
@@ -96,8 +88,7 @@
                 </div>
             </div>
 
-            <a href="{% url 'analysis_list' %}"
-                class="block text-center w-full py-2 bg-gray-100 text-gray-600 rounded hover:bg-gray-200 transition">
+            <a href="{% url 'analysis_list' %}" class="block text-center w-full py-2 bg-gray-100 text-gray-600 rounded hover:bg-gray-200 transition">
                 Voltar para Lista
             </a>
         </div>

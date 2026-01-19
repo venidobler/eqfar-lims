@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Novo Equipamento - EQFAR LIMS{% endblock %}
+
+{% block header_title %}Cadastrar Equipamento{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
+    
+    <div class="mb-6 border-b pb-4">
+        <h3 class="text-lg font-medium text-gray-900">Detalhes do Equipamento</h3>
+        <p class="text-sm text-gray-500">Preencha as informações para adicionar um novo item ao laboratório.</p>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" class="space-y-6">
+        {% csrf_token %}
+        
+        {% for field in form %}
+        <div>
+            <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+                {{ field.label }}
+            </label>
+            {{ field }}
+            {% if field.errors %}
+                <p class="text-red-500 text-xs mt-1">{{ field.errors.0 }}</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        <div class="flex justify-end gap-3 mt-8">
+            <a href="{% url 'equipment_list' %}" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors">
+                Cancelar
+            </a>
+            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 shadow-md transition-colors">
+                Salvar Equipamento
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

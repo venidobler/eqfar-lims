@@ -16,6 +16,7 @@ services:
     command: gunicorn config.wsgi:application --bind 0.0.0.0:8000
     volumes:
       - .:/app  # Opcional: Útil para desenvolvimento, remove em produção real se quiser
+      - ./media:/app/media # Monte o diretório de mídia
     ports:
       - "8000:8000"
     env_file:

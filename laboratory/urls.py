@@ -22,4 +22,7 @@ urlpatterns = [
 
     # Rota para listar insumos (ex: /laboratorio/insumos/)
     path('insumos/', views.consumable_list, name='consumable_list'),
+
+    # NOVA ROTA:
+    path('insumos/novo/', views.ConsumableCreateView.as_view(), name='consumable_create'),
 ]
