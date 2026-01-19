@@ -6,7 +6,7 @@ from django.contrib import messages
 
 # --- NOVAS IMPORTAÇÕES NECESSÁRIAS PARA A CLASS-BASED VIEW ---
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.views.generic import CreateView
+from django.views.generic import CreateView, UpdateView
 from django.urls import reverse_lazy
 # -------------------------------------------------------------
 
@@ -157,6 +157,15 @@ class ConsumableCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     form_class = ConsumableForm
     # MUDEI O NOME AQUI PARA NÃO CONFLITAR COM O DE CIMA
     template_name = 'laboratory/consumable_create.html' 
+    success_url = reverse_lazy('consumable_list')
+
+    def test_func(self):
+        return self.request.user.is_staff
+    
+class ConsumableUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Consumable
+    form_class = ConsumableForm
+    template_name = 'laboratory/consumable_edit.html' # Vamos criar um template específico
     success_url = reverse_lazy('consumable_list')
 
     def test_func(self):

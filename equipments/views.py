@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404 # <--- Importe o 404
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.db.models import Q  # <--- IMPORTANTE: Permite buscas com "OU" (OR)
 from .models import Equipment
-from django.views.generic import CreateView
+from django.views.generic import CreateView, UpdateView
 from django.urls import reverse_lazy
 from .forms import EquipmentForm
 
@@ -43,3 +43,19 @@ class EquipmentCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     # Teste de segurança: Só entra se for Admin/Staff
     def test_func(self):
         return self.request.user.is_staff
+    
+class EquipmentUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Equipment
+    form_class = EquipmentForm
+    template_name = 'equipments/equipment_form.html' # Reaproveitamos o template!
+    success_url = reverse_lazy('equipment_list')
+
+    # Só Admin/Staff altera
+    def test_func(self):
+        return self.request.user.is_staff
+        
+    # Hackzinho para mudar o título da página de "Cadastrar" para "Editar"
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['page_title'] = 'Editar Equipamento'
+        return context
