@@ -6,6 +6,14 @@ from equipments.models import Equipment  # Importando do outro app
 # --- 1. Tabela de Insumos (Consumables) ---
 class Consumable(models.Model):
     name = models.CharField(max_length=100, verbose_name="Nome do Insumo")
+
+    is_active = models.BooleanField(default=True, verbose_name="Ativo?") 
+
+    # Dica: Adicione isso para ajudar na filtragem padrão
+    def delete(self):
+        # Sobrescreve o delete padrão para apenas desativar
+        self.is_active = False
+        self.save()
     
     # --- CAMPOS NOVOS NECESSÁRIOS PARA O ESTOQUE ---
     quantity = models.DecimalField(

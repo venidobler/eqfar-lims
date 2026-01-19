@@ -170,3 +170,28 @@ class ConsumableUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def test_func(self):
         return self.request.user.is_staff
+    
+@login_required
+def archive_consumable(request, pk):
+    # Verificação de segurança: Apenas Staff (Equipe) pode arquivar
+    if not request.user.is_staff:
+        messages.error(request, "Você não tem permissão para arquivar insumos.")
+        return redirect('consumable_list')
+
+    # Busca o insumo pelo ID (pk) ou dá erro 404 se não existir
+    item = get_object_or_404(Consumable, pk=pk)
+    
+    # Lógica de Toggle:
+    # Se está ativo -> desativa (arquiva)
+    # Se está inativo -> ativa (restaura)
+    if item.is_active:
+        item.is_active = False
+        messages.warning(request, f"O insumo '{item.name}' foi arquivado e não aparecerá em novas listas.")
+    else:
+        item.is_active = True
+        messages.success(request, f"O insumo '{item.name}' foi reativado com sucesso.")
+    
+    item.save()
+    
+    # Redireciona de volta para a lista (ou para a edição, se preferir)
+    return redirect('consumable_list')

@@ -4,10 +4,10 @@
 {% block header_title %}Editar Insumo{% endblock %}
 
 {% block content %}
-<div class="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
+<div class="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md mb-10">
     <div class="mb-6 border-b pb-4">
         <h3 class="text-lg font-medium text-gray-900">Editar / Corrigir Estoque</h3>
-        <p class="text-sm text-gray-500">Ajuste a quantidade manualmente (correção de inventário) ou altere dados do produto.</p>
+        <p class="text-sm text-gray-500">Ajuste a quantidade manualmente ou altere dados do produto.</p>
     </div>
 
     <form method="post" class="space-y-6">
@@ -17,7 +17,8 @@
             <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
                 {{ field.label }}
             </label>
-            {{ field }} {% if field.errors %}
+            {{ field }} 
+            {% if field.errors %}
                 <p class="text-red-500 text-xs mt-1">{{ field.errors.0 }}</p>
             {% endif %}
         </div>
@@ -32,5 +33,33 @@
             </button>
         </div>
     </form>
-</div>
-{% endblock %}
+
+    <div class="mt-10 pt-6 border-t border-red-100">
+        <h4 class="text-red-800 font-bold mb-2">Zona de Perigo</h4>
+        <div class="bg-red-50 p-4 rounded-md border border-red-200 flex justify-between items-center">
+            <div>
+                <p class="text-sm text-red-700 font-medium">
+                    {% if form.instance.is_active %}
+                    Arquivar este insumo
+                    {% else %}
+                    Reativar este insumo
+                    {% endif %}
+                </p>
+                <p class="text-xs text-red-500">
+                    {% if form.instance.is_active %}
+                    Ele sumirá das listas de seleção.
+                    {% else %}
+                    Ele voltará a aparecer.
+                    {% endif %}
+                </p>
+            </div>
+
+            <a href="{% url 'consumable_archive' form.instance.pk %}" 
+               class="px-3 py-2 border border-red-300 text-red-700 rounded hover:bg-red-100 text-sm font-semibold transition"
+               onclick="return confirm('Tem certeza que deseja alterar o status deste item?')">
+                {% if form.instance.is_active %}Arquivar{% else %}Reativar{% endif %}
+            </a>
+        </div>
+    </div>
+
+</div> {% endblock %}

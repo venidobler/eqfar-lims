@@ -28,4 +28,8 @@ urlpatterns = [
 
     # NOVA ROTA:
     path('insumos/<int:pk>/editar/', views.ConsumableUpdateView.as_view(), name='consumable_edit'),
+
+    # NOVA ROTA:
+    path('insumos/<int:pk>/arquivar/', views.archive_consumable, name='consumable_archive'),
+
 ]

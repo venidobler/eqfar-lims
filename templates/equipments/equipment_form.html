@@ -36,5 +36,37 @@
             </button>
         </div>
     </form>
+
+    {% if form.instance.pk %}
+    <div class="mt-10 pt-6 border-t border-red-100">
+        <h4 class="text-red-800 font-bold mb-2">Status do Ativo</h4>
+        
+        <div class="bg-red-50 p-4 rounded-md border border-red-200 flex justify-between items-center">
+            <div>
+                <p class="text-sm text-red-700 font-medium">
+                    {% if form.instance.status == 'DES' %}Reativar Equipamento{% else %}Desativar Equipamento{% endif %}
+                </p>
+                <p class="text-xs text-red-500">
+                    {% if form.instance.status == 'DES' %}
+                        O equipamento voltará a aparecer para reservas.
+                    {% else %}
+                        O equipamento não aparecerá para novas reservas.
+                    {% endif %}
+                </p>
+            </div>
+            
+            <a href="{% url 'equipment_archive' form.instance.pk %}" 
+               class="px-3 py-2 bg-red-600 text-red-700 rounded hover:bg-red-700 text-sm font-semibold transition shadow"
+               onclick="return confirm('Tem certeza que deseja alterar o status deste equipamento?')">
+               {% if form.instance.status == 'DES' %}
+                   Reativar
+               {% else %}
+                   Desativar
+               {% endif %}
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
 </div>
 {% endblock %}

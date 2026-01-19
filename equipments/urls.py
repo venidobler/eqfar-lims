@@ -7,4 +7,5 @@ urlpatterns = [
     path('novo/', views.EquipmentCreateView.as_view(), name='equipment_create'),
     path('<int:id>/', views.equipment_detail, name='equipment_detail'),
     path('<int:pk>/editar/', views.EquipmentUpdateView.as_view(), name='equipment_edit'),
+    path('<int:pk>/arquivar/', views.archive_equipment, name='equipment_archive'),
 ]

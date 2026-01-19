@@ -1,4 +1,5 @@
 from django import forms
+from equipments.models import Equipment
 from .models import EquipmentBooking, MaterialUsage, Consumable
 
 class EquipmentBookingForm(forms.ModelForm):
@@ -15,6 +16,14 @@ class EquipmentBookingForm(forms.ModelForm):
             'start_time': 'Início do Uso',
             'end_time': 'Fim do Uso',
         }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # EXCLUI equipamentos com status DESATIVADO e QUEBRADO da lista de reserva
+        self.fields['equipment'].queryset = Equipment.objects.exclude(
+            status__in=[Equipment.Status.DESATIVADO, Equipment.Status.QUEBRADO]
+        )
 
 class MaterialUsageForm(forms.ModelForm):
     class Meta:
@@ -28,6 +37,11 @@ class MaterialUsageForm(forms.ModelForm):
             'consumable': 'Item do Estoque',
             'quantity_used': 'Quantidade Utilizada',
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Filtra apenas insumos ATIVOS (is_active=True)
+        self.fields['consumable'].queryset = Consumable.objects.filter(is_active=True)
 
 # --- ADICIONE ESTA NOVA CLASSE AO FINAL ---
 class ConsumableForm(forms.ModelForm):

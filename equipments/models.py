@@ -6,6 +6,7 @@ class Equipment(models.Model):
         EMPRESTADO = 'OCUP', 'Ocupado/Em Uso' # Mudei de EMPRESTADO para OCUPADO
         MANUTENCAO = 'MAN', 'Em Manutenção'
         QUEBRADO = 'QUE', 'Quebrado/Inutilizável'
+        DESATIVADO = 'DES', 'Desativado/Arquivado'
 
     name = models.CharField(max_length=100, verbose_name="Nome do Equipamento")
     asset_tag = models.CharField(max_length=50, unique=True, verbose_name="Patrimônio/Tag")
