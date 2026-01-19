@@ -18,7 +18,7 @@
 
         <aside class="w-64 bg-slate-900 text-white flex flex-col flex-shrink-0 transition-all duration-300">
             <div class="h-16 flex items-center justify-center border-b border-slate-800">
-                <a href="{% url 'home' %}" class="text-xl font-bold tracking-wider flex items-center gap-2">
+                <a href="{% url 'dashboard' %}" class="text-xl font-bold tracking-wider flex items-center gap-2">
                     🧪 EQFAR <span class="text-xs bg-blue-600 px-1.5 rounded">LIMS</span>
                 </a>
             </div>
@@ -71,13 +71,13 @@
                     Estoque de Insumos
                 </a>
 
-                <a href="{% url 'home' %}" class="flex items-center px-3 py-2 rounded-md transition-all group border-l-4
-                    {% if request.resolver_match.url_name == 'home' or 'equipments' in request.path %}
+                <a href="{% url 'equipment_list' %}" class="flex items-center px-3 py-2 rounded-md transition-all group border-l-4
+                    {% if request.resolver_match.url_name == 'equipment_list' or 'equipments' in request.path %}
                         bg-slate-800 text-white border-green-500 shadow-inner
                     {% else %}
                         text-slate-300 border-transparent hover:bg-slate-800 hover:text-white
                     {% endif %}">
-                    <svg class="w-5 h-5 mr-3 {% if request.resolver_match.url_name == 'home' %}text-green-400{% else %}text-slate-400 group-hover:text-green-400{% endif %}" 
+                    <svg class="w-5 h-5 mr-3 {% if request.resolver_match.url_name == 'equipment_list' %}text-green-400{% else %}text-slate-400 group-hover:text-green-400{% endif %}" 
                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                             d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/>
@@ -132,7 +132,7 @@
                         class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 border border-gray-100 z-50"
                         style="display: none;">
 
-                        <form method="post" action="{% url 'admin:logout' %}">
+                        <form method="post" action="{% url 'logout' %}">
                             {% csrf_token %}
                             <button type="submit"
                                 class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
