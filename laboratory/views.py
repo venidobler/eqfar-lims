@@ -10,6 +10,9 @@ from django.views.generic import CreateView, UpdateView
 from django.urls import reverse_lazy
 # -------------------------------------------------------------
 
+from django_filters.views import FilterView
+from .filters import ConsumableFilter
+
 import json
 from django.utils import timezone
 from datetime import timedelta
@@ -146,10 +149,16 @@ def dashboard(request):
     }
     return render(request, 'laboratory/dashboard.html', context)
 
-@login_required
-def consumable_list(request):
-    consumables = Consumable.objects.all().order_by('name')
-    return render(request, 'laboratory/consumable_list.html', {'consumables': consumables})
+class ConsumableListView(LoginRequiredMixin, FilterView):
+    model = Consumable
+    template_name = 'laboratory/consumable_list.html'
+    context_object_name = 'consumables'
+    filterset_class = ConsumableFilter # Conecta com o filtro
+    paginate_by = 10 # <--- PAGINAÇÃO AUTOMÁTICA! Mostra 10 itens por página
+    
+    # Ordenação padrão (os mais novos primeiro ou por nome)
+    def get_queryset(self):
+        return Consumable.objects.all().order_by('expiration_date', 'name')
 
 # --- NOVA VIEW: CADASTRAR NOVO TIPO DE INSUMO (Estoque) ---
 class ConsumableCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
