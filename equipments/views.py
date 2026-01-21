@@ -8,22 +8,19 @@ from django.urls import reverse_lazy
 from .forms import EquipmentForm
 from django.contrib import messages
 
-def list_equipments(request):
-    query = request.GET.get('q', '')
-    equipments = Equipment.objects.all()
-    
-    if query:
-        equipments = equipments.filter(
-            Q(name__icontains=query) |   # Busca no Nome
-            Q(model__icontains=query) |  # Busca no Modelo
-            Q(brand__icontains=query)    # Busca na Marca
-        )
+from django_filters.views import FilterView
+from .filters import EquipmentFilter
 
-    context = {
-        'equipments': equipments,
-        'query': query
-    }
-    return render(request, 'equipments/list.html', context)
+class EquipmentListView(LoginRequiredMixin, FilterView):
+    model = Equipment
+    template_name = 'equipments/equipment_list.html'
+    context_object_name = 'equipments'
+    filterset_class = EquipmentFilter
+    paginate_by = 10 # 10 equipamentos por página
+
+    def get_queryset(self):
+        # Ordena por nome por padrão
+        return Equipment.objects.all().order_by('name')
 
 # --- ADICIONE ESTA NOVA FUNÇÃO ABAIXO ---
 def equipment_detail(request, id):
