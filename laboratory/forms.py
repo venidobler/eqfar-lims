@@ -1,6 +1,6 @@
 from django import forms
 from equipments.models import Equipment
-from .models import EquipmentBooking, MaterialUsage, Consumable
+from .models import EquipmentBooking, MaterialUsage, Consumable, Analysis
 
 class EquipmentBookingForm(forms.ModelForm):
     class Meta:
@@ -64,4 +64,25 @@ class ConsumableForm(forms.ModelForm):
             'unit': forms.TextInput(attrs={'class': 'w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'}),
             'minimum_stock': forms.NumberInput(attrs={'class': 'w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'}),
             'expiration_date': forms.DateInput(attrs={'type': 'date', 'class': 'w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'}),
+        }
+
+# --- ADICIONE ESTA CLASSE PARA AS ANÁLISES ---
+class AnalysisForm(forms.ModelForm):
+    class Meta:
+        model = Analysis
+        # Aqui definimos explicitamente que queremos o campo PROJETO
+        fields = ['title', 'project_name', 'description', 'status']
+        
+        labels = {
+            'title': 'Título da Análise',
+            'project_name': 'Nome do Projeto',
+            'description': 'Metodologia / Descrição',
+            'status': 'Situação Atual',
+        }
+        
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500', 'placeholder': 'Ex: Análise de pH da Amostra X'}),
+            'project_name': forms.TextInput(attrs={'class': 'w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500', 'placeholder': 'Ex: Projeto Iniciação Científica 2026'}),
+            'description': forms.Textarea(attrs={'rows': 4, 'class': 'w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'}),
+            'status': forms.Select(attrs={'class': 'w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'}),
         }

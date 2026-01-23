@@ -5,14 +5,17 @@ urlpatterns = [
     # Nova rota para o dashboard
     path('', views.dashboard, name='dashboard'),
 
-    # Ex: /laboratory/
-    path('analises/', views.analysis_list, name='analysis_list'),
+    # Lista (já fizemos)
+    path('analises/', views.AnalysisListView.as_view(), name='analysis_list'),
     
-    # Ex: /laboratory/nova-analise/
-    path('analises/nova/', views.analysis_create, name='analysis_create'),
-
-    # Nova Rota: Detalhes da Análise (ex: /laboratorio/1/)
-    path('analises/<int:pk>/', views.analysis_detail, name='analysis_detail'),
+    # Criação (MUDOU: de views.analysis_create para AnalysisCreateView.as_view())
+    path('analises/nova/', views.AnalysisCreateView.as_view(), name='analysis_create'),
+    
+    # Detalhes (MUDOU: de views.analysis_detail para AnalysisDetailView.as_view())
+    path('analises/<int:pk>/', views.AnalysisDetailView.as_view(), name='analysis_detail'),
+    
+    # Edição (NOVO)
+    path('analises/<int:pk>/editar/', views.AnalysisUpdateView.as_view(), name='analysis_edit'),
 
     # Nova rota: Adicionar Reserva na Análise X
     path('analises/<int:analysis_id>/reservar/', views.add_booking, name='add_booking'),

@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto mt-10 px-4">
+    <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div class="px-4 py-5 border-b border-gray-200 sm:px-6">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">
+                {% if form.instance.pk %}Editar Análise{% else %}Nova Análise{% endif %}
+            </h3>
+            <p class="mt-1 max-w-2xl text-sm text-gray-500">
+                Preencha os dados abaixo para registrar o experimento.
+            </p>
+        </div>
+        
+        <div class="px-4 py-5 sm:p-6">
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="grid grid-cols-1 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Título</label>
+                        {% render_field form.title class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" %}
+                        {% if form.title.errors %}<span class="text-red-500 text-xs">{{ form.title.errors.0 }}</span>{% endif %}
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Projeto Vinculado</label>
+                        {% render_field form.project_name class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" %}
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Status</label>
+                        {% render_field form.status class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" %}
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Metodologia / Descrição</label>
+                        {% render_field form.description class="mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" rows="5" %}
+                    </div>
+                </div>
+
+                <div class="mt-8 flex justify-end gap-3">
+                    <a href="{% url 'analysis_list' %}" class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none">
+                        Cancelar
+                    </a>
+                    <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none">
+                        Salvar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

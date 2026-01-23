@@ -1,40 +1,221 @@
 {% extends 'base.html' %}
+{% load widget_tweaks %}
 
 {% block content %}
-<div class="max-w-6xl mx-auto mt-10">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold text-gray-800">Minhas Análises 🧪</h1>
-        <a href="{% url 'analysis_create' %}"
-            class="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700 transition">
-            + Nova Análise
-        </a>
+<div class="max-w-7xl mx-auto mt-8 px-4 sm:px-6 lg:px-8">
+
+    <div class="md:flex md:items-center md:justify-between mb-6">
+        <div class="flex-1 min-w-0">
+            <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
+                Análises & Projetos 🧪
+            </h2>
+            <p class="mt-1 text-sm text-gray-500">
+                Histórico de execuções laboratoriais e status de aprovação.
+            </p>
+        </div>
+        <div class="mt-4 flex md:mt-0 md:ml-4 gap-3">
+            <button onclick="toggleFilterDrawer()"
+                class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none transition-colors">
+                <svg class="-ml-1 mr-2 h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                </svg>
+                Filtros
+            </button>
+
+            <a href="{% url 'analysis_create' %}"
+                class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none transition-colors">
+                + Nova Análise
+            </a>
+        </div>
     </div>
 
-    <div class="grid gap-4">
-        {% for analysis in analyses %}
-        <div class="bg-white p-6 rounded-lg shadow border-l-4 
-            {% if analysis.status == 'planned' %}border-yellow-400{% endif %}
-            {% if analysis.status == 'ongoing' %}border-blue-500{% endif %}
-            {% if analysis.status == 'approved' %}border-green-500{% endif %}
-        ">
-            <div class="flex justify-between">
-                <h3 class="text-xl font-semibold text-blue-600 hover:text-blue-800 transition">
-                    <a href="{% url 'analysis_detail' analysis.pk %}">
-                        {{ analysis.title }}
-                    </a>
-                </h3>
-                <span class="text-sm font-bold text-gray-500 uppercase tracking-wide">{{ analysis.get_status_display }}</span>
-            </div>
-            <p class="text-gray-600 mt-2">{{ analysis.description|truncatechars:100 }}</p>
-            <div class="mt-4 text-sm text-gray-400">
-                Criado em: {{ analysis.created_at|date:"d/m/Y" }}
+    <div class="bg-white shadow rounded-lg overflow-hidden border-b border-gray-200 sm:rounded-lg">
+        <div class="px-4 py-3 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
+            <span class="text-xs text-gray-500 uppercase font-bold tracking-wider">
+                Exibindo {{ page_obj.start_index }}-{{ page_obj.end_index }} de {{ page_obj.paginator.count }}
+                resultados
+            </span>
+        </div>
+
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Análise
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Projeto
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status
+                    </th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ações
+                    </th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for item in analyses %}
+                <tr class="hover:bg-gray-50 transition">
+                    <td class="px-6 py-4">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 h-10 w-10 flex items-center justify-center rounded-full 
+            {% if item.status == 'planned' %}bg-yellow-100 text-yellow-600
+            {% elif item.status == 'ongoing' %}bg-blue-100 text-blue-600
+            {% elif item.status == 'approved' %}bg-green-100 text-green-600
+            {% elif item.status == 'rejected' %}bg-red-100 text-red-600{% endif %}">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                                </svg>
+                            </div>
+
+                            <div style="margin-left: 16px;">
+                                <div class="text-sm font-medium text-gray-900">{{ item.title }}</div>
+                                <div class="text-xs text-gray-500">Resp: {{ item.researcher.username }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ item.project_name|default:"-" }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ item.created_at|date:"d/m/Y" }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                            {% if item.status == 'planned' %}bg-yellow-100 text-yellow-800
+                            {% elif item.status == 'ongoing' %}bg-blue-100 text-blue-800
+                            {% elif item.status == 'approved' %}bg-green-100 text-green-800
+                            {% elif item.status == 'rejected' %}bg-red-100 text-red-800{% endif %}">
+                            {{ item.get_status_display }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <a href="{% url 'analysis_detail' item.pk %}"
+                            class="text-blue-600 hover:text-blue-900 inline-block" title="Ver Detalhes">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="px-6 py-10 text-center text-gray-500 italic">
+                        Nenhuma análise encontrada.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% if is_paginated %}
+        <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                    <p class="text-sm text-gray-700">Página <span class="font-medium">{{ page_obj.number }}</span> de
+                        <span class="font-medium">{{ page_obj.paginator.num_pages }}</span></p>
+                </div>
+                <div>
+                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                        {% if page_obj.has_previous %}
+                        <a href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode|cut:'page=' }}"
+                            class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">Anterior</a>
+                        {% endif %}
+
+                        {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <span
+                            class="relative inline-flex items-center px-4 py-2 border border-blue-500 bg-blue-50 text-sm font-medium text-blue-600">{{
+                            num }}</span>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %} <a
+                            href="?page={{ num }}&{{ request.GET.urlencode|cut:'page=' }}"
+                            class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                            {{ num }}</a>
+                            {% endif %}
+                            {% endfor %}
+
+                            {% if page_obj.has_next %}
+                            <a href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode|cut:'page=' }}"
+                                class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">Próximo</a>
+                            {% endif %}
+                    </nav>
+                </div>
             </div>
         </div>
-        {% empty %}
-        <div class="text-center py-10 bg-gray-50 rounded-lg border-dashed border-2 border-gray-300">
-            <p class="text-gray-500">Você ainda não tem nenhuma análise registrada.</p>
-        </div>
-        {% endfor %}
+        {% endif %}
     </div>
 </div>
+
+<div id="filterDrawer" class="fixed inset-0 overflow-hidden z-50 hidden" aria-labelledby="slide-over-title"
+    role="dialog" aria-modal="true">
+    <div class="absolute inset-0 overflow-hidden">
+        <div class="absolute inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="toggleFilterDrawer()"></div>
+        <div class="fixed inset-y-0 right-0 pl-10 max-w-full flex">
+            <div
+                class="w-screen max-w-md transform transition ease-in-out duration-500 sm:duration-700 bg-white shadow-xl flex flex-col h-full">
+                <div class="px-4 py-6 bg-blue-600 sm:px-6">
+                    <div class="flex items-start justify-between">
+                        <h2 class="text-lg font-medium text-white">Filtrar Análises</h2>
+                        <button type="button"
+                            class="bg-blue-600 rounded-md text-blue-200 hover:text-white focus:outline-none"
+                            onclick="toggleFilterDrawer()">
+                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="relative flex-1 px-4 py-6 sm:px-6 overflow-y-auto">
+                    <form method="get" class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Busca Geral</label>
+                            {% render_field filter.form.search class="mt-1 block w-full border-gray-300 rounded-md
+                            shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Título, Projeto
+                            ou Descrição" %}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Status</label>
+                            {% render_field filter.form.status class="mt-1 block w-full border-gray-300 rounded-md
+                            shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" %}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Data de Criação (Período)</label>
+                            <div class="grid grid-cols-2 gap-2 mt-1">
+                                {% render_field filter.form.created_at class="block w-full border-gray-300 rounded-md
+                                shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="De" %}
+                            </div>
+                        </div>
+
+                        <div class="pt-6 border-t border-gray-200 flex gap-3">
+                            <button type="submit"
+                                class="w-full inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none">Aplicar</button>
+                            <a href="{% url 'analysis_list' %}"
+                                class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none">Limpar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleFilterDrawer() {
+        const drawer = document.getElementById('filterDrawer');
+        if (drawer.classList.contains('hidden')) {
+            drawer.classList.remove('hidden');
+        } else {
+            drawer.classList.add('hidden');
+        }
+    }
+</script>
 {% endblock %}
