@@ -1,48 +1,81 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Analysis, Consumable, EquipmentBooking
 from django.contrib.auth.decorators import login_required
-from .forms import EquipmentBookingForm, MaterialUsageForm, ConsumableForm # <--- Adicionei ConsumableForm
+from .forms import EquipmentBookingForm, MaterialUsageForm, ConsumableForm, AnalysisForm
 from django.contrib import messages
 
 # --- NOVAS IMPORTAÇÕES NECESSÁRIAS PARA A CLASS-BASED VIEW ---
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.views.generic import CreateView, UpdateView
+from django.views.generic import CreateView, UpdateView, DetailView
 from django.urls import reverse_lazy
 # -------------------------------------------------------------
+
+from django_filters.views import FilterView
+from .filters import AnalysisFilter, ConsumableFilter
 
 import json
 from django.utils import timezone
 from datetime import timedelta
 
 # Lista todas as análises (Dashboard)
-@login_required
-def analysis_list(request):
-    analyses = Analysis.objects.filter(researcher=request.user).order_by('-created_at')
-    return render(request, 'laboratory/analysis_list.html', {'analyses': analyses})
+class AnalysisListView(LoginRequiredMixin, FilterView):
+    model = Analysis
+    template_name = 'laboratory/analysis_list.html'
+    context_object_name = 'analyses'
+    filterset_class = AnalysisFilter
+    paginate_by = 10 # 10 análises por página
 
-# Cria uma nova análise
-@login_required
-def analysis_create(request):
-    if request.method == 'POST':
-        title = request.POST.get('title')
-        description = request.POST.get('description')
+    def get_queryset(self):
+        # Mostra as análises do usuário logado OU todas se for Staff/Admin
+        user = self.request.user
+        if user.is_staff:
+            queryset = Analysis.objects.all()
+        else:
+            queryset = Analysis.objects.filter(researcher=user)
         
-        Analysis.objects.create(
-            title=title,
-            description=description,
-            researcher=request.user
-        )
-        return redirect('analysis_list')
-        
-    return render(request, 'laboratory/analysis_create.html')
+        # Ordena da mais recente para a mais antiga
+        return queryset.order_by('-created_at')
 
-@login_required
-def analysis_detail(request, pk):
-    analysis = get_object_or_404(Analysis, pk=pk, researcher=request.user)
-    context = {
-        'analysis': analysis,
-    }
-    return render(request, 'laboratory/analysis_detail.html', context)
+# 1. CRIAÇÃO (Substitui o antigo def analysis_create)
+class AnalysisCreateView(LoginRequiredMixin, CreateView):
+    model = Analysis
+    form_class = AnalysisForm
+    # O Django procura automaticamente por 'analysis_form.html'
+    template_name = 'laboratory/analysis_form.html' 
+    success_url = reverse_lazy('analysis_list')
+
+    def form_valid(self, form):
+        # Vincula o usuário logado automaticamente antes de salvar
+        form.instance.researcher = self.request.user
+        return super().form_valid(form)
+
+# 2. EDIÇÃO (Novo! Você não tinha, mas é essencial para corrigir erros)
+class AnalysisUpdateView(LoginRequiredMixin, UpdateView):
+    model = Analysis
+    form_class = AnalysisForm
+    template_name = 'laboratory/analysis_form.html' # Reusa o mesmo template de criação
+    success_url = reverse_lazy('analysis_list')
+    
+    def get_queryset(self):
+        # Apenas Staff ou o Dono podem editar
+        user = self.request.user
+        if user.is_staff:
+            return Analysis.objects.all()
+        return Analysis.objects.filter(researcher=user)
+
+# 3. DETALHES (Substitui o antigo def analysis_detail)
+class AnalysisDetailView(LoginRequiredMixin, DetailView):
+    model = Analysis
+    template_name = 'laboratory/analysis_detail.html'
+    context_object_name = 'analysis'
+
+    def get_queryset(self):
+        # CORREÇÃO DO ERRO DE PERMISSÃO:
+        # Se for Staff, vê tudo. Se for usuário comum, vê só as suas.
+        user = self.request.user
+        if user.is_staff:
+            return Analysis.objects.all()
+        return Analysis.objects.filter(researcher=user)
 
 @login_required
 def add_booking(request, analysis_id):
@@ -146,10 +179,16 @@ def dashboard(request):
     }
     return render(request, 'laboratory/dashboard.html', context)
 
-@login_required
-def consumable_list(request):
-    consumables = Consumable.objects.all().order_by('name')
-    return render(request, 'laboratory/consumable_list.html', {'consumables': consumables})
+class ConsumableListView(LoginRequiredMixin, FilterView):
+    model = Consumable
+    template_name = 'laboratory/consumable_list.html'
+    context_object_name = 'consumables'
+    filterset_class = ConsumableFilter # Conecta com o filtro
+    paginate_by = 10 # <--- PAGINAÇÃO AUTOMÁTICA! Mostra 10 itens por página
+    
+    # Ordenação padrão (os mais novos primeiro ou por nome)
+    def get_queryset(self):
+        return Consumable.objects.all().order_by('expiration_date', 'name')
 
 # --- NOVA VIEW: CADASTRAR NOVO TIPO DE INSUMO (Estoque) ---
 class ConsumableCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):

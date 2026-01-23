@@ -17,6 +17,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    # Adicionados
+    'django_filters',    
+    'widget_tweaks',     
     
     # Third party
     'tailwind',

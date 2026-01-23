@@ -5,14 +5,17 @@ urlpatterns = [
     # Nova rota para o dashboard
     path('', views.dashboard, name='dashboard'),
 
-    # Ex: /laboratory/
-    path('analises/', views.analysis_list, name='analysis_list'),
+    # Lista (já fizemos)
+    path('analises/', views.AnalysisListView.as_view(), name='analysis_list'),
     
-    # Ex: /laboratory/nova-analise/
-    path('analises/nova/', views.analysis_create, name='analysis_create'),
-
-    # Nova Rota: Detalhes da Análise (ex: /laboratorio/1/)
-    path('analises/<int:pk>/', views.analysis_detail, name='analysis_detail'),
+    # Criação (MUDOU: de views.analysis_create para AnalysisCreateView.as_view())
+    path('analises/nova/', views.AnalysisCreateView.as_view(), name='analysis_create'),
+    
+    # Detalhes (MUDOU: de views.analysis_detail para AnalysisDetailView.as_view())
+    path('analises/<int:pk>/', views.AnalysisDetailView.as_view(), name='analysis_detail'),
+    
+    # Edição (NOVO)
+    path('analises/<int:pk>/editar/', views.AnalysisUpdateView.as_view(), name='analysis_edit'),
 
     # Nova rota: Adicionar Reserva na Análise X
     path('analises/<int:analysis_id>/reservar/', views.add_booking, name='add_booking'),
@@ -21,7 +24,7 @@ urlpatterns = [
     path('analises/<int:analysis_id>/insumo/', views.add_consumable, name='add_consumable'),
 
     # Rota para listar insumos (ex: /laboratorio/insumos/)
-    path('insumos/', views.consumable_list, name='consumable_list'),
+    path('insumos/', views.ConsumableListView.as_view(), name='consumable_list'),
 
     # NOVA ROTA:
     path('insumos/novo/', views.ConsumableCreateView.as_view(), name='consumable_create'),
