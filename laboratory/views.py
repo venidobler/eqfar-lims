@@ -40,24 +40,36 @@ class AnalysisListView(LoginRequiredMixin, FilterView):
 class AnalysisCreateView(LoginRequiredMixin, CreateView):
     model = Analysis
     form_class = AnalysisForm
-    # O Django procura automaticamente por 'analysis_form.html'
-    template_name = 'laboratory/analysis_form.html' 
+    template_name = 'laboratory/analysis_form.html'
     success_url = reverse_lazy('analysis_list')
 
+    # NOVO: Passa o usuário para o formulário
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
     def form_valid(self, form):
-        # Vincula o usuário logado automaticamente antes de salvar
         form.instance.researcher = self.request.user
+        # Garante forçadamente que nasce como 'planned' no Backend
+        form.instance.status = 'planned' 
         return super().form_valid(form)
 
-# 2. EDIÇÃO (Novo! Você não tinha, mas é essencial para corrigir erros)
+
+# 2. EDIÇÃO
 class AnalysisUpdateView(LoginRequiredMixin, UpdateView):
     model = Analysis
     form_class = AnalysisForm
-    template_name = 'laboratory/analysis_form.html' # Reusa o mesmo template de criação
+    template_name = 'laboratory/analysis_form.html'
     success_url = reverse_lazy('analysis_list')
     
+    # NOVO: Passa o usuário para o formulário
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
     def get_queryset(self):
-        # Apenas Staff ou o Dono podem editar
         user = self.request.user
         if user.is_staff:
             return Analysis.objects.all()
