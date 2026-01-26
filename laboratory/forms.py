@@ -70,7 +70,6 @@ class ConsumableForm(forms.ModelForm):
 class AnalysisForm(forms.ModelForm):
     class Meta:
         model = Analysis
-        # Aqui definimos explicitamente que queremos o campo PROJETO
         fields = ['title', 'project_name', 'description', 'status']
         
         labels = {
@@ -86,3 +85,38 @@ class AnalysisForm(forms.ModelForm):
             'description': forms.Textarea(attrs={'rows': 4, 'class': 'w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'}),
             'status': forms.Select(attrs={'class': 'w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500'}),
         }
+
+    # AQUI ESTÁ A MÁGICA 🎩
+    def __init__(self, *args, **kwargs):
+        # Extrai o usuário que passaremos pela View
+        self.user = kwargs.pop('user', None) 
+        super(AnalysisForm, self).__init__(*args, **kwargs)
+
+        # Regra 1: CRIAÇÃO
+        # Se não tem ID (instance.pk é None), é uma criação nova.
+        if not self.instance.pk:
+            # Remove o campo status do formulário visualmente
+            # O usuário não escolhe status ao criar, nasce sempre 'planned'
+            if 'status' in self.fields:
+                self.fields['status'].widget = forms.HiddenInput()
+                self.fields['status'].initial = 'planned'
+        
+        # Regra 2: EDIÇÃO
+        else:
+            # Se for STAFF (Gestor), vê todas as opções (não fazemos nada)
+            # Se for PESQUISADOR (Comum), aplicamos o filtro
+            if self.user and not self.user.is_staff:
+                allowed_choices = [
+                    ('planned', 'Planejada'),
+                    ('ongoing', 'Em Andamento'),
+                ]
+                
+                # Mas atenção: Se a análise JÁ estiver aprovada/rejeitada, 
+                # o pesquisador deve ver o status atual (mas não pode mudar).
+                current_status = self.instance.status
+                if current_status in ['approved', 'rejected']:
+                    # Se já está finalizada, tornamos o campo somente leitura ou desabilitado
+                    self.fields['status'].disabled = True
+                else:
+                    # Se ainda está aberta, limita as opções
+                    self.fields['status'].choices = allowed_choices
