@@ -170,12 +170,12 @@ def dashboard(request):
     # Queremos mostrar a linha do equipamento mesmo se ele não tiver reservas
     equipments = Equipment.objects.exclude(
         status__in=[Equipment.Status.DESATIVADO, Equipment.Status.QUEBRADO]
-    ).order_by('name')
+    ).order_by('category', 'name') # <--- MUDANÇA AQUI: Ordenação Dupla!
     
     equipment_list = list(equipments)
     
     # y_categories é a lista de nomes que vai aparecer na esquerda do gráfico
-    y_categories = [eq.name for eq in equipment_list]
+    y_categories = [f"{eq.category}|{eq.name}" for eq in equipment_list]
     
     # Criamos um "dicionário" para saber em qual linha (0, 1, 2...) o equipamento fica
     eq_index_map = {eq.id: index for index, eq in enumerate(equipment_list)}
