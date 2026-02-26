@@ -1,95 +1,155 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto mt-6">
-    
-    <div class="flex justify-between items-center mb-6">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-800">Ocupação dos Equipamentos 📅</h1>
-            <p class="text-gray-500 text-sm">Visualizando próximas 2 semanas</p>
+<div class="max-w-7xl mx-auto mt-8 px-4 sm:px-6 lg:px-8">
+
+    <div class="md:flex md:items-center md:justify-between mb-6">
+        <div class="flex-1 min-w-0">
+            <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
+                Dashboard de Ocupação 📊
+            </h2>
+            <p class="mt-1 text-sm text-gray-500">
+                Visualize e gerencie a alocação dos equipamentos do laboratório.
+            </p>
         </div>
-        
-        <div class="flex gap-4 text-sm">
+
+        <div
+            class="mt-4 flex md:mt-0 gap-4 text-sm font-medium text-gray-600 bg-white px-4 py-2 rounded-lg shadow-sm border border-gray-200">
             <div class="flex items-center gap-2">
-                <span class="w-3 h-3 bg-blue-600 rounded-full"></span>
-                <span class="text-gray-600">Minhas Reservas</span>
+                <div class="w-4 h-4 rounded bg-blue-600"></div>
+                Minhas Reservas
             </div>
             <div class="flex items-center gap-2">
-                <span class="w-3 h-3 bg-gray-400 rounded-full"></span>
-                <span class="text-gray-600">Outros Pesquisadores</span>
+                <div class="w-4 h-4 rounded bg-gray-400"></div>
+                Outros Pesquisadores
             </div>
         </div>
     </div>
 
-    <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-        <div id="gantt-chart"></div>
+    <div class="bg-white shadow rounded-lg p-4 border border-gray-200">
+        <div id="gantt-container" style="height: 600px; width: 100%;"></div>
     </div>
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script src="https://cdn.jsdelivr.net/npm/highcharts@11/highcharts-gantt.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/highcharts@11/modules/exporting.js"></script>
+
+<script id="categories-data" type="application/json">{{ y_categories|safe }}</script>
+<script id="series-data" type="application/json">{{ series_data|safe }}</script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Recebe os dados do Django (o |safe é vital para o JSON não quebrar)
-        var bookingsData = {{ gantt_data|safe }};
 
-        if (bookingsData.length === 0) {
-            document.getElementById('gantt-chart').innerHTML = 
-                '<p class="text-center text-gray-400 py-10">Nenhuma reserva encontrada para este período.</p>';
+        // 1. Lendo os dados com segurança
+        const categoriesText = document.getElementById('categories-data').textContent;
+        const seriesText = document.getElementById('series-data').textContent;
+
+        // Converte os textos em objetos JavaScript de verdade
+        const yCategories = categoriesText ? JSON.parse(categoriesText) : [];
+        const seriesData = seriesText ? JSON.parse(seriesText) : [];
+
+        // DEBUG: Mostra no Console (F12) o que chegou
+        console.log("📊 Categorias (Eixo Y):", yCategories);
+        console.log("📊 Dados (Barras):", seriesData);
+
+        const container = document.getElementById('gantt-container');
+
+        // Trava de Segurança
+        if (!yCategories || yCategories.length === 0) {
+            container.innerHTML = `
+            <div class="flex flex-col items-center justify-center h-full text-gray-500">
+                <svg class="w-12 h-12 mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                <p>Nenhum equipamento cadastrado ou ativo.</p>
+                <p class="text-sm">Cadastre um equipamento para gerar o gráfico.</p>
+            </div>
+        `;
             return;
         }
 
-        var options = {
-            series: [
-                {
-                    data: bookingsData
-                }
-            ],
-            chart: {
-                height: 450,
-                type: 'rangeBar', // Tipo específico para Gantt
-                fontFamily: 'inherit',
-                toolbar: {
-                    show: true // Permite zoom e download
-                }
-            },
-            plotOptions: {
-                bar: {
-                    horizontal: true,
-                    barHeight: '60%', // Altura da barra
-                    rangeBarGroupRows: true // Agrupa reservas do mesmo equipamento na mesma linha
-                }
-            },
-            xaxis: {
-                type: 'datetime', // Eixo X é tempo
-                labels: {
-                    datetimeFormatter: {
-                        year: 'yyyy',
-                        month: "MMM 'yy",
-                        day: 'dd MMM',
-                        hour: 'HH:mm'
+        // Inicialização do Highcharts Gantt
+        try {
+            Highcharts.ganttChart('gantt-container', {
+                title: { text: '' },
+                chart: {
+                    style: { fontFamily: 'Inter, sans-serif' },
+                    backgroundColor: 'transparent'
+                },
+                xAxis: {
+                    currentDateIndicator: {
+                        width: 2,
+                        color: 'red',
+                        label: { format: 'Agora' }
+                    },
+                },
+                navigator: { enabled: true, liveRedraw: true },
+                rangeSelector: {
+                    enabled: true,
+                    selected: 1,
+                    buttons: [
+                        { type: 'day', count: 1, text: 'Dia' },
+                        { type: 'week', count: 1, text: 'Sem' },
+                        { type: 'month', count: 1, text: 'Mês' },
+                        { type: 'all', text: 'Tudo' }
+                    ]
+                },
+                yAxis: {
+                    type: 'category',
+                    grid: { enabled: true, borderColor: 'rgba(0,0,0,0.1)', borderWidth: 1 },
+                    categories: yCategories,
+                    labels: { style: { fontWeight: 'bold', color: '#374151' } }
+                },
+                plotOptions: {
+                    series: {
+                        borderRadius: 4,
+                        cursor: 'pointer',
+                        point: {
+                            events: {
+                                click: function () {
+                                    if (this.custom && this.custom.analysisId) {
+                                        window.location.href = '/analises/' + this.custom.analysisId + '/';
+                                    }
+                                }
+                            }
+                        }
                     }
-                }
-            },
-            tooltip: {
-                custom: function({series, seriesIndex, dataPointIndex, w}) {
-                    var data = w.config.series[seriesIndex].data[dataPointIndex];
-                    var start = new Date(data.y[0]).toLocaleString('pt-BR', {hour: '2-digit', minute:'2-digit', day:'2-digit', month:'2-digit'});
-                    var end = new Date(data.y[1]).toLocaleString('pt-BR', {hour: '2-digit', minute:'2-digit', day:'2-digit', month:'2-digit'});
-                    
-                    return '<div class="px-3 py-2 bg-white border border-gray-200 shadow rounded">' +
-                           '<p class="font-bold text-gray-800">' + data.x + '</p>' +
-                           '<p class="text-xs text-blue-600 font-semibold">' + data.meta.analise + '</p>' +
-                           '<p class="text-xs text-gray-500">Resp: ' + data.meta.researcher + '</p>' +
-                           '<p class="text-xs text-gray-400 mt-1">' + start + ' - ' + end + '</p>' +
-                           '</div>';
-                }
-            }
-        };
+                },
+                tooltip: {
+                    useHTML: true,
+                    formatter: function () {
+                        const start = Highcharts.dateFormat('%d/%m %H:%M', this.point.start);
+                        const end = Highcharts.dateFormat('%d/%m %H:%M', this.point.end);
+                        const custom = this.point.custom;
+                        if (!custom) return this.point.name;
 
-        var chart = new ApexCharts(document.querySelector("#gantt-chart"), options);
-        chart.render();
+                        return `
+                        <div style="padding: 8px; max-width: 250px; font-family: sans-serif;">
+                            <div style="font-weight: bold; font-size: 14px; margin-bottom: 4px; color: ${this.point.color}">
+                                ${this.point.name}
+                            </div>
+                            <div style="font-size: 12px; margin-bottom: 2px;">
+                                <strong>👨‍🔬 Resp:</strong> ${custom.researcher}
+                            </div>
+                            <div style="font-size: 12px; margin-bottom: 6px;">
+                                <strong>📁 Projeto:</strong> ${custom.project}
+                            </div>
+                            <hr style="margin: 4px 0; border: 0; border-top: 1px solid #eee;" />
+                            <div style="font-size: 11px; color: #666;">
+                                🕒 ${start} até ${end}
+                            </div>
+                        </div>
+                    `;
+                    }
+                },
+                series: [{
+                    name: 'Ocupação',
+                    data: seriesData
+                }],
+                credits: { enabled: false }
+            });
+        } catch (error) {
+            console.error("Erro ao gerar o Highcharts:", error);
+        }
     });
 </script>
 {% endblock %}
