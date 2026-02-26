@@ -12,6 +12,14 @@ class Equipment(models.Model):
     asset_tag = models.CharField(max_length=50, unique=True, verbose_name="Patrimônio/Tag")
     brand = models.CharField(max_length=100, verbose_name="Marca", blank=True, null=True)
     model = models.CharField(max_length=100, verbose_name="Modelo", blank=True, null=True)
+
+    # --- NOVO CAMPO: CATEGORIA/SETOR ---
+    category = models.CharField(
+        max_length=50, 
+        default='Geral', 
+        verbose_name="Setor/Categoria",
+        help_text="Ex: Cromatografia, Espectroscopia, Preparo..."
+    )
     
     # --- NOVOS CAMPOS PARA GESTÃO DE CAPACIDADE ---
     analysis_time_minutes = models.PositiveIntegerField(

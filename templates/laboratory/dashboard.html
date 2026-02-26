@@ -93,11 +93,28 @@
                         { type: 'all', text: 'Tudo' }
                     ]
                 },
+                // EIXO Y COM AGRUPAMENTO VISUAL (NÍVEL 4)
                 yAxis: {
                     type: 'category',
                     grid: { enabled: true, borderColor: 'rgba(0,0,0,0.1)', borderWidth: 1 },
                     categories: yCategories,
-                    labels: { style: { fontWeight: 'bold', color: '#374151' } }
+                    labels: {
+                        useHTML: true,
+                        formatter: function () {
+                            // Divide a string "Categoria|Nome"
+                            const parts = this.value.split('|');
+                            const category = parts[0];
+                            const name = parts[1];
+
+                            // Retorna um HTML customizado com a categoria em cima, menorzinha e cinza
+                            return `
+                            <div style="text-align: right; line-height: 1.2; padding-right: 8px;">
+                                <span style="font-size: 10px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">${category}</span><br/>
+                                <span style="font-weight: bold; color: #374151; font-size: 13px;">${name}</span>
+                            </div>
+                        `;
+                        }
+                    }
                 },
                 plotOptions: {
                     series: {
