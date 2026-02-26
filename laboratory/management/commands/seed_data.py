@@ -75,8 +75,8 @@ class Command(BaseCommand):
             'Análise de Impurezas - {}'
         ]
 
-        # Gera dados para hoje e os próximos 5 dias
-        base_time = timezone.now().replace(minute=0, second=0, microsecond=0)
+        # Gera dados para hoje e os próximos 5 dias (Zera a hora para o offset funcionar bem)
+        base_time = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
         
         for i in range(15): # Criar 15 análises
             researcher = random.choice(researchers)

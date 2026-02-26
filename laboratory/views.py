@@ -17,6 +17,8 @@ import json
 from django.utils import timezone
 from datetime import timedelta
 
+from equipments.models import Equipment
+
 # Lista todas as análises (Dashboard)
 class AnalysisListView(LoginRequiredMixin, FilterView):
     model = Analysis
@@ -159,36 +161,66 @@ def add_consumable(request, analysis_id):
 
 @login_required
 def dashboard(request):
+    # 1. Definir a janela de tempo (ex: 7 dias para trás, 30 para frente)
     today = timezone.now()
-    start_date = today - timedelta(days=2)
-    end_date = today + timedelta(days=14)
+    start_date = today - timedelta(days=7)
+    end_date = today + timedelta(days=30)
 
+    # 2. EIXO Y: Buscar todos os equipamentos ativos
+    # Queremos mostrar a linha do equipamento mesmo se ele não tiver reservas
+    equipments = Equipment.objects.exclude(
+        status__in=[Equipment.Status.DESATIVADO, Equipment.Status.QUEBRADO]
+    ).order_by('name')
+    
+    equipment_list = list(equipments)
+    
+    # y_categories é a lista de nomes que vai aparecer na esquerda do gráfico
+    y_categories = [eq.name for eq in equipment_list]
+    
+    # Criamos um "dicionário" para saber em qual linha (0, 1, 2...) o equipamento fica
+    eq_index_map = {eq.id: index for index, eq in enumerate(equipment_list)}
+
+    # 3. DADOS: Buscar os agendamentos do período
     bookings = EquipmentBooking.objects.filter(
-        start_time__gte=start_date,
-        start_time__lte=end_date
-    ).select_related('equipment', 'analysis')
+        start_time__lte=end_date,
+        end_time__gte=start_date
+    ).select_related('equipment', 'analysis', 'analysis__researcher')
 
-    gantt_data = []
+    # 4. Montar a série do Highcharts
+    series_data = []
     
     for booking in bookings:
-        color = '#2563EB' if booking.analysis.researcher == request.user else '#9CA3AF'
-        
-        gantt_data.append({
-            'x': booking.equipment.name,
-            'y': [
-                int(booking.start_time.timestamp() * 1000),
-                int(booking.end_time.timestamp() * 1000)
-            ],
-            'fillColor': color,
-            'meta': {
-                'analise': booking.analysis.title,
-                'researcher': booking.analysis.researcher.username
+        # Se o equipamento da reserva foi inativado e não está no Eixo Y, ignora
+        if booking.equipment_id not in eq_index_map:
+            continue
+
+        # Lógica Visual (Nível 1): Azul para as SUAS análises, Cinza para as outras
+        is_mine = (booking.analysis.researcher == request.user)
+        color = '#2563EB' if is_mine else '#9CA3AF'
+
+        series_data.append({
+            'name': booking.analysis.title,
+            # Highcharts Gantt exige datas em Timestamp Unix (milissegundos)
+            'start': int(booking.start_time.timestamp() * 1000),
+            'end': int(booking.end_time.timestamp() * 1000),
+            'y': eq_index_map[booking.equipment_id], # A linha correta do equipamento
+            'color': color,
+            
+            # CUSTOM: Dados extras que usaremos no Tooltip (Hover) e no Clique
+            'custom': {
+                'analysisId': booking.analysis.id,
+                'researcher': booking.analysis.researcher.get_full_name() or booking.analysis.researcher.username,
+                'project': booking.analysis.project_name or 'Não informado',
+                'isMine': is_mine
             }
         })
 
     context = {
-        'gantt_data': json.dumps(gantt_data)
+        # O safe=False não é necessário ao usar json.dumps, passamos direto como string
+        'y_categories': json.dumps(y_categories),
+        'series_data': json.dumps(series_data),
     }
+    
     return render(request, 'laboratory/dashboard.html', context)
 
 class ConsumableListView(LoginRequiredMixin, FilterView):
